@@ -3,13 +3,13 @@
 Created on Mon Oct 10 23:14:16 2016
 
 @author: atolmid
-"""
 
 #!/usr/bin/python
 
 # Ref:https://confluence.slac.stanford.edu/display/PSDM/How+to+access+HDF5+data+from+Python 
 
 # starting code was taken from https://github.com/sarahrn/Py-Gsvhn-DigitStruct-Reader/blob/master/digitStruct.py
+"""
 
 import h5py
 
@@ -38,8 +38,6 @@ def printHDFObj(theObj, theObjName):
     print "{}".format(theObjName)
     print "    type(): {}".format(type(theObj))
     if isFile or isGroup or isDataSet:
-        # if theObj.name != None:
-        #    print "    name: {}".format(theObj.name)
         print "    id: {}".format(theObj.id)
     if isFile or isGroup:
         print "    keys: {}".format(theObj.keys())
@@ -168,8 +166,8 @@ def getDigitStruct():
     # return the two datasets
     return trainDataset, testDataset
 
-def testMain():
-    train, test = getDigitStruct()
-    for i in range(5):
-        print('train ', i , 'name : ', str(i+1)+'.png', 'elements: ', train[str(i+1)+'.png'])
-        print('test ', i , 'name : ', str(i+1)+'.png', 'elements: ', test[str(i+1)+'.png'])
+#def testMain():
+#    train, test = getDigitStruct()
+#    for i in range(5):
+#        print('train ', i , 'name : ', str(i+1)+'.png', 'elements: ', train[str(i+1)+'.png'])
+#        print('test ', i , 'name : ', str(i+1)+'.png', 'elements: ', test[str(i+1)+'.png'])
