@@ -131,6 +131,7 @@ def getDigitStruct():
     # .mat files for training and test images 
     trainFileName = './train/digitStruct.mat'
     testFileName = './test/digitStruct.mat'
+    extraFileName = './extra/digitStruct.mat'
     # create data srtucture for training images
     # create an empty dictionary where the data will be stored
     print('generating the training dataset')
@@ -163,8 +164,24 @@ def getDigitStruct():
             item[bbox.label] = [bbox.left, bbox.top, bbox.width, bbox.height]
         # add the temporary dictionary of each image, to the dataset dictionary
         testDataset[dsObj.name] = item
+    # create data srtucture for testing images
+    # create an empty dictionary where the data will be stored
+    print('generating the extra dataset')
+    extraDataset = {}
+    # for each of the images in the extra set,
+    # get all labels that are included,
+    # as well as the position of their bounding boxes in the image
+    for dsObj in yieldNextDigitStruct(extraFileName):
+        # create an empty temporary dictionary for each label
+        item = {}
+        # for each label store in the dictionary the label,
+        #along with its bounding box position
+        for bbox in dsObj.bboxList:
+            item[bbox.label] = [bbox.left, bbox.top, bbox.width, bbox.height]
+        # add the temporary dictionary of each image, to the dataset dictionary
+        extraDataset[dsObj.name] = item
     # return the two datasets
-    return trainDataset, testDataset
+    return trainDataset, testDataset, extraDataset
 
 #def testMain():
 #    train, test = getDigitStruct()
