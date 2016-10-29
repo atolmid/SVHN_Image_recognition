@@ -110,6 +110,8 @@ with graph.as_default():
     # list of label batches, of size test_batch_size each
     test_labels1 = [test_labels[:, x:x+test_batch_size, :] for x in range(0,(test_labels.shape[1]), test_batch_size)]
     
+    #probability that a neuron's output is kept during dropout
+    keep_prob = tf.placeholder(tf.float32)
     # variables
     # 3 convolution layers
     layer1_weights = tf.Variable(tf.truncated_normal([patch_size, patch_size, num_channels, depth],  stddev=0.1))
@@ -153,7 +155,7 @@ with graph.as_default():
 
 
     # the model used
-    def model(data):
+    def model(data, keep_prob):
         # run a convolution with stride = 1
         conv1 = tf.nn.conv2d(data, layer1_weights, [1, 1, 1, 1], padding='SAME')
         # send the convolution output plus the bias through a relu function
@@ -170,8 +172,10 @@ with graph.as_default():
         conv4 = tf.nn.conv2d(hidden3, layer4_weights, [1, 1, 1, 1], padding='SAME')
         # fourth relu function
         hidden4 = tf.nn.relu(tf.nn.bias_add(conv4, layer4_biases))
+        # add a max pooling function and dropout
+        pool1 = tf.nn.dropout(tf.nn.max_pool(hidden4, [1, 2, 2, 1], [1, 2, 2, 1], padding='SAME'), keep_prob)
         # add a max pooling function
-        pool1 = tf.nn.max_pool(hidden4, [1, 2, 2, 1], [1, 2, 2, 1], padding='SAME')
+        #pool1 = tf.nn.max_pool(hidden4, [1, 2, 2, 1], [1, 2, 2, 1], padding='SAME')
         # reshape
         reshape = tf.reshape(pool1, [-1, (image_size/2) * (image_size/2) * depth])
         # fully connected layers (different for each digit)
@@ -195,7 +199,7 @@ with graph.as_default():
         return [logit_a, logit_b, logit_c, logit_d, logit_e]
         
     # Training computation
-    logits = model(tf_train_dataset)
+    logits = model(tf_train_dataset, keep_prob= 0.9)
     # loss is the mean softmax cross entropy for each of the digits 
     loss =tf.reduce_mean([tf.nn.softmax_cross_entropy_with_logits(logits[i], tf_train_labels[i, :, :]) for i in range(num_digits)])
     # optimizer is Adam optimizer, with learning rate 1e-4
@@ -203,14 +207,14 @@ with graph.as_default():
     
     # Predictions for the train, validation, and test data
     train_prediction = [tf.nn.softmax(logits[i]) for i in range(num_digits)]
-    valid_prediction = [tf.reshape([tf.nn.softmax(model(valid)[i]) for i in range(num_digits)], [num_digits, -1, num_labels]) for valid in tf_valid_dataset]
-    test_prediction = [tf.reshape([tf.nn.softmax(model(test)[i]) for i in range(num_digits)], [num_digits, -1, num_labels])  for test in tf_test_dataset]
+    valid_prediction = [tf.reshape([tf.nn.softmax(model(valid, keep_prob= 1.0)[i]) for i in range(num_digits)], [num_digits, -1, num_labels]) for valid in tf_valid_dataset]
+    test_prediction = [tf.reshape([tf.nn.softmax(model(test, keep_prob= 1.0)[i]) for i in range(num_digits)], [num_digits, -1, num_labels])  for test in tf_test_dataset]
 
     # save model
     saver = tf.train.Saver()
 
 
-num_steps = 10001
+num_steps = 40001
 
 with tf.Session(graph=graph) as session:
   tf.initialize_all_variables().run()
@@ -234,7 +238,7 @@ with tf.Session(graph=graph) as session:
       print('Validation accuracy: %.1f%%' % avg_accuracy(
         valid_prediction, val_labels1))
   # save model
-  save_path = saver.save(session, "CNN_parameters.ckpt")
+  save_path = saver.save(session, "CNN_parameters-40000steps_dropout-adam.ckpt")
   print("Model saved in file: %s" % save_path)
   # calculate and print test accuracy
   print('Test accuracy: %.1f%%' % avg_accuracy(test_prediction, test_labels1))
