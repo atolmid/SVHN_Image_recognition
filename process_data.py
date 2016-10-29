@@ -147,7 +147,7 @@ def load_picture(folder, im_data, min_num_images):
           dataset[i-1, :, :] = image_data
           # add the labels to the labels list
           # create a list with size 5-the number of digits of the number we are detecting
-          l = np.zeros(5-len(labels))
+          l = [0]*(5-len(labels))
           #  the list that contains the labels will be the concatenation of the list with None
           # and the list with the actual digits.
           # Therefore, the the number of labels will always be 5, and the actual digits will always be
@@ -165,17 +165,19 @@ def load_picture(folder, im_data, min_num_images):
     raise Exception('Many fewer images than expected: %d < %d' %
                     (num_images, min_num_images))
   if folder == 'train':
-      train_dataset = dataset[0:int(0.7*num_images), :, :]
-      valid_dataset = dataset[int(0.7*num_images):num_images, :, :]
-      train_labels = data_labels[0:int(0.7*num_images)]
-      valid_labels = data_labels[int(0.7*num_images):num_images]
+      train_dataset = dataset[0:int(0.9*num_images), :, :]
+      valid_dataset = dataset[int(0.9*num_images):num_images, :, :]
+      train_labels = data_labels[0:int(0.9*num_images)]
+      valid_labels = data_labels[int(0.9*num_images):num_images]
       #print('train: ', train_dataset[0])
       #print('train_l: ', train_labels[0])
       plt.imshow(train_dataset[0])
       plt.imshow(valid_dataset[-1])
       the_dataset = {'train_dataset':train_dataset, 'valid_dataset':valid_dataset, 'train_labels':train_labels, 'valid_labels':valid_labels}
-  else:
+  elif folder == 'test':
       the_dataset = {'test_dataset':dataset, 'test_labels':data_labels}
+  else:
+      the_dataset = {'extra_dataset':dataset, 'extra_labels':data_labels}
   print('Full dataset tensor:', dataset.shape)
   print('Mean:', np.mean(dataset))
   print('Standard deviation:', np.std(dataset))
@@ -201,6 +203,7 @@ def maybe_pickle(data_folders, im_data, min_num_images_per_class, force=True):
         print('Unable to save data to', set_filename, ':', e)
   return dataset_names#, data_labels
 
-train, test = ds.getDigitStruct()
+train, test, extra = ds.getDigitStruct()
 train_datasets = maybe_pickle([train_folders],train,  1000)
 test_datasets = maybe_pickle([test_folders], test, 1800)
+extra_datasets = maybe_pickle([extra_folders], extra, 1800)
