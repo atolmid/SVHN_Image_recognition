@@ -20,7 +20,7 @@ batch_size = 32
 test_batch_size = 100
 patch_size = 5
 depth = 16
-num_hidden = 1024
+num_hidden = 500
 
 graph = tf.Graph()
 
@@ -199,7 +199,7 @@ with graph.as_default():
         return [logit_a, logit_b, logit_c, logit_d, logit_e]
         
     # Training computation
-    logits = model(tf_train_dataset, keep_prob= 0.9)
+    logits = model(tf_train_dataset, keep_prob= 0.6)
     # loss is the mean softmax cross entropy for each of the digits 
     loss =tf.reduce_mean([tf.nn.softmax_cross_entropy_with_logits(logits[i], tf_train_labels[i, :, :]) for i in range(num_digits)])
     # optimizer is Adam optimizer, with learning rate 1e-4
@@ -238,7 +238,7 @@ with tf.Session(graph=graph) as session:
       print('Validation accuracy: %.1f%%' % avg_accuracy(
         valid_prediction, val_labels1))
   # save model
-  save_path = saver.save(session, "CNN_parameters-40000steps_dropout-adam.ckpt")
+  save_path = saver.save(session, "CNN_parameters-numhidden500_40000steps_dropout0.6-adam.ckpt")
   print("Model saved in file: %s" % save_path)
   # calculate and print test accuracy
   print('Test accuracy: %.1f%%' % avg_accuracy(test_prediction, test_labels1))
