@@ -92,6 +92,7 @@ def avg_accuracy(predictions, labels):
 # define the model
 with graph.as_default():
     
+    global_step = tf.Variable(0)  # count the number of steps taken.
     # training input data
     tf_train_dataset =  tf.placeholder(tf.float32, shape=(batch_size, image_size, image_size, num_channels))
     tf_train_labels = tf.placeholder(tf.float32, shape=(num_digits, batch_size, num_labels))
@@ -199,11 +200,15 @@ with graph.as_default():
         return [logit_a, logit_b, logit_c, logit_d, logit_e]
         
     # Training computation
-    logits = model(tf_train_dataset, keep_prob= 0.6)
+    logits = model(tf_train_dataset, keep_prob= 0.9)
     # loss is the mean softmax cross entropy for each of the digits 
     loss =tf.reduce_mean([tf.nn.softmax_cross_entropy_with_logits(logits[i], tf_train_labels[i, :, :]) for i in range(num_digits)])
     # optimizer is Adam optimizer, with learning rate 1e-4
-    optimizer = tf.train.AdamOptimizer(1e-4).minimize(loss)
+    #optimizer = tf.train.AdamOptimizer(0.5).minimize(loss)
+    #define a decaying learning rate
+    learning_rate = tf.train.exponential_decay(0.5, global_step, 1, 0.96)        
+    # Optimizer
+    optimizer = tf.train.AdamOptimizer(learning_rate).minimize(loss)
     
     # Predictions for the train, validation, and test data
     train_prediction = [tf.nn.softmax(logits[i]) for i in range(num_digits)]
@@ -220,6 +225,8 @@ with tf.Session(graph=graph) as session:
   tf.initialize_all_variables().run()
   print('Initialized')
   for step in range(num_steps):
+    global_step = tf.add(global_step,1)
+    
     # calculate offset
     offset = (step * batch_size) % (train_labels.shape[1] - batch_size)
     # select batch data
@@ -228,6 +235,9 @@ with tf.Session(graph=graph) as session:
     batch_labels = train_labels[:, offset:(offset + batch_size), :]
     # run optimizer, make  prediction, calculate loss
     feed_dict = {tf_train_dataset : batch_data, tf_train_labels : batch_labels}
+    
+    
+    
     _, l, predictions = session.run(
       [optimizer, loss, train_prediction], feed_dict=feed_dict)
     # every 100 steps calculate and print validation accuracy
@@ -238,7 +248,7 @@ with tf.Session(graph=graph) as session:
       print('Validation accuracy: %.1f%%' % avg_accuracy(
         valid_prediction, val_labels1))
   # save model
-  save_path = saver.save(session, "CNN_parameters-numhidden500_40000steps_dropout0.6-adam.ckpt")
+  save_path = saver.save(session, "CNN_parameters-numhidden500_40000steps_dropout0.9_learning_0.5_decay-adam.ckpt")
   print("Model saved in file: %s" % save_path)
   # calculate and print test accuracy
   print('Test accuracy: %.1f%%' % avg_accuracy(test_prediction, test_labels1))
