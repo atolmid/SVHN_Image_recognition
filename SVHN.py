@@ -181,19 +181,19 @@ with graph.as_default():
         reshape = tf.reshape(pool1, [-1, (image_size/2) * (image_size/2) * depth])
         # fully connected layers (different for each digit)
         # first digit
-        hidden5a = tf.nn.relu(tf.matmul(reshape, layer5a_weights)+layer5a_biases)
+        hidden5a = tf.nn.dropout(tf.nn.relu(tf.matmul(reshape, layer5a_weights)+layer5a_biases), keep_prob)
         logit_a = tf.matmul(hidden5a, layer6a_weights)+layer6a_biases
         # second digit
-        hidden5b = tf.nn.relu(tf.matmul(reshape, layer5b_weights)+layer5b_biases)
+        hidden5b = tf.nn.dropout(tf.nn.relu(tf.matmul(reshape, layer5b_weights)+layer5b_biases), keep_prob)
         logit_b = tf.matmul(hidden5b, layer6b_weights)+layer6b_biases
         # third digit
-        hidden5c = tf.nn.relu(tf.matmul(reshape, layer5c_weights)+layer5c_biases)
+        hidden5c = tf.nn.dropout(tf.nn.relu(tf.matmul(reshape, layer5c_weights)+layer5c_biases), keep_prob)
         logit_c = tf.matmul(hidden5c, layer6c_weights)+layer6c_biases
         # fourth digit
-        hidden5d = tf.nn.relu(tf.matmul(reshape, layer5d_weights)+layer5d_biases)
+        hidden5d = tf.nn.dropout(tf.nn.relu(tf.matmul(reshape, layer5d_weights)+layer5d_biases), keep_prob)
         logit_d = tf.matmul(hidden5d, layer6d_weights)+layer6d_biases
         # fifth digit
-        hidden5e = tf.nn.relu(tf.matmul(reshape, layer5e_weights)+layer5e_biases)
+        hidden5e = tf.nn.dropout(tf.nn.relu(tf.matmul(reshape, layer5e_weights)+layer5e_biases), keep_prob)
         logit_e = tf.matmul(hidden5e, layer6e_weights)+layer6e_biases
         
         #return the logits
@@ -204,11 +204,11 @@ with graph.as_default():
     # loss is the mean softmax cross entropy for each of the digits 
     loss =tf.reduce_mean([tf.nn.softmax_cross_entropy_with_logits(logits[i], tf_train_labels[i, :, :]) for i in range(num_digits)])
     # optimizer is Adam optimizer, with learning rate 1e-4
-    #optimizer = tf.train.AdamOptimizer(0.5).minimize(loss)
+    optimizer = tf.train.AdamOptimizer(1e-4).minimize(loss)
     #define a decaying learning rate
-    learning_rate = tf.train.exponential_decay(0.5, global_step, 1, 0.96)        
+    # = tf.train.exponential_decay(0.5, global_step, 1, 0.96)        
     # Optimizer
-    optimizer = tf.train.AdamOptimizer(learning_rate).minimize(loss)
+    #optimizer = tf.train.AdamOptimizer(learning_rate).minimize(loss)
     
     # Predictions for the train, validation, and test data
     train_prediction = [tf.nn.softmax(logits[i]) for i in range(num_digits)]
@@ -248,7 +248,7 @@ with tf.Session(graph=graph) as session:
       print('Validation accuracy: %.1f%%' % avg_accuracy(
         valid_prediction, val_labels1))
   # save model
-  save_path = saver.save(session, "CNN_parameters-numhidden500_40000steps_dropout0.9_learning_0.5_decay-adam.ckpt")
+  save_path = saver.save(session, "CNN_parameters-numhidden500_40000steps_double_dropout0.9_no_learning_decay-adam.ckpt")
   print("Model saved in file: %s" % save_path)
   # calculate and print test accuracy
   print('Test accuracy: %.1f%%' % avg_accuracy(test_prediction, test_labels1))
