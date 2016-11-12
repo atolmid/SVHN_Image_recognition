@@ -8,15 +8,16 @@ import numpy as np
 import tensorflow as tf
 from six.moves import cPickle as pickle
 from six.moves import range
+#import process_data as pd
 
 pickle_train = 'train.pickle'
 pickle_test = 'test.pickle'
-image_size = 128
+image_size = 64#128
 num_labels = 11
 num_channels = 1 # grayscale
 num_digits = 5
 
-batch_size = 32
+batch_size = 16
 test_batch_size = 100
 patch_size = 5
 depth = 16
@@ -26,6 +27,7 @@ graph = tf.Graph()
 
 # load the training/validation dataset from the train pickle 
 with open(pickle_train, 'rb') as f:
+    #train, test1, _ = ds.getDigitStruct()
     save = pickle.load(f)
     train_dataset = save['train_dataset']
     train_labels = np.array(save['train_labels'])
@@ -219,7 +221,7 @@ with graph.as_default():
     saver = tf.train.Saver()
 
 
-num_steps = 40001
+num_steps = 30001
 
 with tf.Session(graph=graph) as session:
   tf.initialize_all_variables().run()
@@ -248,7 +250,7 @@ with tf.Session(graph=graph) as session:
       print('Validation accuracy: %.1f%%' % avg_accuracy(
         valid_prediction, val_labels1))
   # save model
-  save_path = saver.save(session, "CNN_parameters-numhidden500_40000steps_double_dropout0.9_no_learning_decay-adam.ckpt")
+  save_path = saver.save(session, "CNN_parameters-numhidden500_30000steps_double_dropout0.9_no_learning_decay_4xdata_size54-adam.ckpt")
   print("Model saved in file: %s" % save_path)
   # calculate and print test accuracy
   print('Test accuracy: %.1f%%' % avg_accuracy(test_prediction, test_labels1))
