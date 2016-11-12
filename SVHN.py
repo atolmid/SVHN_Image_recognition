@@ -21,7 +21,7 @@ batch_size = 16
 test_batch_size = 100
 patch_size = 5
 depth = 16
-num_hidden = 500
+num_hidden = 250
 
 graph = tf.Graph()
 
@@ -221,7 +221,7 @@ with graph.as_default():
     saver = tf.train.Saver()
 
 
-num_steps = 30001
+num_steps = 40001
 
 with tf.Session(graph=graph) as session:
   tf.initialize_all_variables().run()
@@ -250,7 +250,7 @@ with tf.Session(graph=graph) as session:
       print('Validation accuracy: %.1f%%' % avg_accuracy(
         valid_prediction, val_labels1))
   # save model
-  save_path = saver.save(session, "CNN_parameters-numhidden500_30000steps_double_dropout0.9_no_learning_decay_4xdata_size54-adam.ckpt")
+  save_path = saver.save(session, "CNN_parameters-numhidden250_40000steps_double_dropout0.9_no_learning_decay_4xdata_size54-adam.ckpt")
   print("Model saved in file: %s" % save_path)
   # calculate and print test accuracy
   print('Test accuracy: %.1f%%' % avg_accuracy(test_prediction, test_labels1))
