@@ -34,7 +34,7 @@ patch_size = 5
 depth = 16
 num_hidden = 500
 
-model_name = "CNN_parameters_augmented_data-numhidden500_trainshape0_steps_double_dropout0.9_0.5_learning_decay_6xdata_batch32_imsize128-adam.ckpt"
+model_name = "CNN_parameters_augmented_data-numhidden500_trainshape0_steps_no_dropout1.0_0.5_learning_decay_6xdata_batch32_imsize128-adam.ckpt"
 
 graph = tf.Graph()
 
